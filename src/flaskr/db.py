@@ -3,9 +3,9 @@ import os
 from pymongo import MongoClient
 logger = logging.getLogger(__name__)
 
-
 def get_db():
-    mongodb_uri = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
+    mongodb_uri = os.getenv('MONGODB_URI')
+
     client = MongoClient(mongodb_uri)
     return client['whois_db']
 

@@ -7,8 +7,7 @@ services:
       - "5000:5000"
     environment:
       - FLASK_ENV=development
-      - MONGODB_URI=mongodb+srv://wolpashka:sholpashka@cluster2.a1p4tuc.mongodb.net/whois_db
-
+      - MONGODB_URI=mongodb://db:27017/whois_db
     depends_on:
       - db
     volumes:
@@ -18,4 +17,4 @@ services:
   db:
     image: mongo:latest
     ports:
-      - "27017:27017"  
+      - "27019:27017"  

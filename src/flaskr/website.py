@@ -6,7 +6,6 @@ from .whois import get_data, get_response
 from flask_caching import Cache
 
 app = Flask(__name__)
-
 logger = logging.getLogger(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
 
@@ -19,11 +18,21 @@ def lookup():
     logger.debug(f'Looking up domain: {domain_name}') 
 
     soup = get_response(domain_name)
+    if not soup:
+        return jsonify({'error': f'Failed to retrieve data for {domain_name}'}), 500
 
     whois_data = get_data(soup)
+    if not whois_data:
+        return jsonify({'error': 'No WHOIS data found'}), 404
+
     db = get_db()
-    save_data(db, domain_name, whois_data)
     
+    try:
+        save_data(db, domain_name, whois_data)
+    except Exception as e:
+        logger.error(f"Failed to save data: {e}")
+        return jsonify({'error': 'Failed to save data'}), 500
+
     return jsonify(whois_data)
 
 

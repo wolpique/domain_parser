@@ -1,11 +1,6 @@
-from flask_pymongo import PyMongo
 import requests
 import logging 
-from flask import Flask
 from bs4 import BeautifulSoup
-
-
-app = Flask(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -43,23 +38,50 @@ def get_data(soup):
         else:
             logger.debug(f'Type mistake') 
     return all_data
-                
-def get_additional_data(soup):   
+
+def get_additional_data(soup):
     data = {}
     div_tables = soup.find_all("div", class_="col-xs-12")
-    for div_table in div_tables: 
-            table = div_table.find("table", class_="table")
-            if table:
-                all_tr = table.find_all('tr')
-                for tr in all_tr:
-                    all_td = tr.find_all('td')
-                    for td in all_td:
-                        text = td.get_text().strip()
-                        if len(all_td) >= 2:  
-                            key = clean_text(all_td[0].get_text())
-                            value = clean_text(all_td[1].get_text())
-                            data[key] = value
-
-    logger.debug(f'Data extracted: {data}') 
+    
+    for div_table in div_tables:
+        table = div_table.find("table", class_="table")
+        if table:
+            data.update(extract_table_data(table))
+    
+    logger.debug(f'Data extracted: {data}')
     return data
+
+def extract_table_data(table):
+    table_data = {}
+    rows = table.find_all('tr')
+    
+    for row in rows:
+        cells = row.find_all('td')
+        if len(cells) >= 2:
+            key = clean_text(cells[0].get_text())
+            value = clean_text(cells[1].get_text())
+            table_data[key] = value
+    
+    return table_data
+
+
+
+# def get_additional_data(soup):   
+#     data = {}
+#     div_tables = soup.find_all("div", class_="col-xs-12")
+#     for div_table in div_tables: 
+#             table = div_table.find("table", class_="table")
+#             if table:
+#                 all_tr = table.find_all('tr')
+#                 for tr in all_tr:
+#                     all_td = tr.find_all('td')
+#                     for td in all_td:
+#                         text = td.get_text().strip()
+#                         if len(all_td) >= 2:  
+#                             key = clean_text(all_td[0].get_text())
+#                             value = clean_text(all_td[1].get_text())
+#                             data[key] = value
+
+#     logger.debug(f'Data extracted: {data}') 
+#     return data
 
