@@ -10,12 +10,16 @@ logger = logging.getLogger(__name__)
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
 
 @app.route('/lookup_whois', methods=['GET'])
-@cache.cached(timeout=300) 
 def lookup():
     domain_name = request.args.get('domain_name')
     if not domain_name:
         return jsonify({'error': 'Domain name is required'}), 400
     logger.debug(f'Looking up domain: {domain_name}') 
+
+    cached_data = cache.get(domain_name)
+    if cached_data:
+        logger.debug(f'Returning cached data for {domain_name}')
+        return jsonify(cached_data)
 
     soup = get_response(domain_name)
     if not soup:
@@ -32,7 +36,9 @@ def lookup():
     except Exception as e:
         logger.error(f"Failed to save data: {e}")
         return jsonify({'error': 'Failed to save data'}), 500
+    
 
+    cache.set(domain_name, whois_data, timeout=300)
     return jsonify(whois_data)
 
 
